@@ -187,6 +187,7 @@ const settings = accountId => ({
       },
       toState: frontendURL(`accounts/${accountId}/settings/custom-roles/list`),
       toStateName: 'custom_roles_list',
+      featureFlag: FEATURE_FLAGS.CUSTOM_ROLES,
     },
     {
       icon: 'document-list-clock',
