@@ -451,12 +451,12 @@ const menuItems = computed(() => {
           icon: 'i-lucide-clock-alert',
           to: accountScopedRoute('sla_list'),
         },*/
-        {
+        /*{
           name: 'Settings Billing',
           label: t('SIDEBAR.BILLING'),
           icon: 'i-lucide-credit-card',
           to: accountScopedRoute('billing_settings_index'),
-        },
+        },*/
       ],
     },
   ];
