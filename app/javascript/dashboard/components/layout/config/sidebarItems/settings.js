@@ -176,10 +176,9 @@ const settings = accountId => ({
       },
       toState: frontendURL(`accounts/${accountId}/settings/audit-logs/list`),
       toStateName: 'auditlogs_list',
-      isEnterpriseOnly: true,
       featureFlag: FEATURE_FLAGS.AUDIT_LOGS,
     },
-    /*{
+    {
       icon: 'scan-person',
       label: 'CUSTOM_ROLES',
       hasSubMenu: false,
@@ -188,9 +187,8 @@ const settings = accountId => ({
       },
       toState: frontendURL(`accounts/${accountId}/settings/custom-roles/list`),
       toStateName: 'custom_roles_list',
-      isEnterpriseOnly: true,
       beta: true,
-    },*/
+    },
     {
       icon: 'document-list-clock',
       label: 'SLA',
@@ -200,7 +198,6 @@ const settings = accountId => ({
       },
       toState: frontendURL(`accounts/${accountId}/settings/sla/list`),
       toStateName: 'sla_list',
-      isEnterpriseOnly: true,
       featureFlag: FEATURE_FLAGS.SLA,
       beta: true,
     },
