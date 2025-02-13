@@ -179,7 +179,7 @@ const settings = accountId => ({
       isEnterpriseOnly: true,
       featureFlag: FEATURE_FLAGS.AUDIT_LOGS,
     },
-    {
+    /*{
       icon: 'scan-person',
       label: 'CUSTOM_ROLES',
       hasSubMenu: false,
@@ -190,7 +190,7 @@ const settings = accountId => ({
       toStateName: 'custom_roles_list',
       isEnterpriseOnly: true,
       beta: true,
-    },
+    },*/
     {
       icon: 'document-list-clock',
       label: 'SLA',
@@ -204,7 +204,7 @@ const settings = accountId => ({
       featureFlag: FEATURE_FLAGS.SLA,
       beta: true,
     },
-    {
+    /*{
       icon: 'credit-card-person',
       label: 'BILLING',
       hasSubMenu: false,
@@ -214,7 +214,7 @@ const settings = accountId => ({
       toState: frontendURL(`accounts/${accountId}/settings/billing`),
       toStateName: 'billing_settings_index',
       showOnlyOnCloud: true,
-    },
+    },*/
   ],
 });
 
