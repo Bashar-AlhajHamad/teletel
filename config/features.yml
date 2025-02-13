@@ -90,6 +90,6 @@
 - name: captain_integration
   enabled: false
 - name: custom_roles
-  enabled: false
+  enabled: true
 - name: chatwoot_v4
   enabled: false
