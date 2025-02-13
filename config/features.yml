@@ -69,8 +69,7 @@
   enabled: false
   premium: true
 - name: response_bot
-  enabled: false
-  premium: true
+  enabled: true
 - name: message_reply_to
   enabled: false
   help_url: https://chwt.app/hc/reply-to
