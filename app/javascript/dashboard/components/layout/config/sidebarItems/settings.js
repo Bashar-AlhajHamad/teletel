@@ -183,11 +183,10 @@ const settings = accountId => ({
       label: 'CUSTOM_ROLES',
       hasSubMenu: false,
       meta: {
-        permissions: ['administrator'],
+        permissions: ['administrator', 'agent'],
       },
       toState: frontendURL(`accounts/${accountId}/settings/custom-roles/list`),
       toStateName: 'custom_roles_list',
-      beta: true,
     },
     {
       icon: 'document-list-clock',
