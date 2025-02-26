@@ -7,7 +7,7 @@ module Public
           def send_invoice
             # Static account and inbox IDs
             account_id = 1
-            inbox_id = 2
+            inbox_id = 11
   
             # Get mobile number from the request body
             mobile_number = params[:mobile_number]
@@ -87,7 +87,7 @@ module Public
             Messages::MessageBuilder.new(nil, conversation, {
               content: message_content,
               account_id: 1, # Static account ID
-              inbox_id: 2,  # Static inbox ID
+              inbox_id: 11,  # Static inbox ID
               conversation_id: conversation.id,
               message_type: :outgoing
             }).perform
