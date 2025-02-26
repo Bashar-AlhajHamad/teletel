@@ -55,13 +55,6 @@ module Public
                 phone_number: mobile_number,
                 account_id: account_id
               )
-          
-              # Create a ContactInbox for the contact
-              inbox = Inbox.find_by(account_id: account_id) # Find or create an inbox
-              ContactInbox.create!(
-                contact_id: contact.id,
-                inbox_id: inbox.id
-              )
             end
             contact
           end
