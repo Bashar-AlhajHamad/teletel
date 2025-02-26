@@ -59,8 +59,8 @@ module Public
                   phone_number: mobile_number
                 }
               ).perform
+              contact = contact_inbox.contact # Assign the created contact
             end
-            contact = contact_inbox.contact # Assign the created contact
           end
   
           def find_or_create_conversation(account_id, inbox_id, contact_id)
