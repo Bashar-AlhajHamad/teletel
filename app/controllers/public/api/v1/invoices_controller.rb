@@ -25,11 +25,6 @@ module Public
             response = {
               status: "success",
               message: "Invoice sent successfully",
-              data: {
-                contact_id: contact.id,
-                conversation_id: conversation.id,
-                message_id: message.id
-              }
             }
   
             render json: response, status: :ok
