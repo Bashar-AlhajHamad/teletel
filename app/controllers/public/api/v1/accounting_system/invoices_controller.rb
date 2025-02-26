@@ -2,8 +2,6 @@ module Public
     module Api
       module V1
         class InvoicesController < ApplicationController
-          before_action :validate_authorization_token
-  
           def send_invoice
             # Static account and inbox IDs
             account_id = 1
@@ -39,18 +37,7 @@ module Public
   
           private
   
-          def validate_authorization_token
-            # Define the expected token (you can store this in environment variables)
-            expected_token = ENV['ACCOUNTING_SYSTEM_API_TOKEN']
-  
-            # Get the token from the request headers
-            provided_token = request.headers['Authorization']&.split(' ')&.last
-  
-            # Compare the tokens
-            unless provided_token == expected_token
-              render json: { status: "error", message: "Unauthorized" }, status: :unauthorized
-            end
-          end
+         
   
           def find_or_create_contact(account_id, inbox_id, mobile_number)
             contact = Contact.find_by(phone_number: mobile_number, account_id: account_id)
