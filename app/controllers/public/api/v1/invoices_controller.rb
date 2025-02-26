@@ -51,16 +51,9 @@ module Public
             contact = Contact.find_by(phone_number: mobile_number, account_id: account_id)
             unless contact
               ::ContactInboxWithContactBuilder.new({
-                source_id: SecureRandom.uuid,
                 inbox: inbox_id,
                 contact_attributes: { phone_number: mobile_number }
               }).perform
-
-              contact = Contact.create!(
-                name: "Customer #{mobile_number}", # Default name
-                phone_number: mobile_number,
-                account_id: account_id
-              )
             end
             contact
           end
