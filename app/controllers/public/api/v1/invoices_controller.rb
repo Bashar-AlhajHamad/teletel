@@ -64,12 +64,20 @@ module Public
           end
   
           def find_or_create_conversation(account_id, inbox_id, contact_id)
+            # Find or create the ContactInbox
+            contact_inbox = ContactInbox.find_or_create_by!(
+              contact_id: contact_id,
+              inbox_id: inbox_id
+            )
+          
+            # Find or create the conversation
             conversation = Conversation.find_by(account_id: account_id, inbox_id: inbox_id, contact_id: contact_id)
             unless conversation
               conversation = Conversation.create!(
                 account_id: account_id,
                 inbox_id: inbox_id,
                 contact_id: contact_id,
+                contact_inbox_id: contact_inbox.id, # Include the contact_inbox_id
                 status: :open
               )
             end
