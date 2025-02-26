@@ -7,7 +7,7 @@ module Public
           def send_invoice
             # Static account and inbox IDs
             account_id = 1
-            inbox_id = 9
+            inbox_id = 2
   
             # Get mobile number from the request body
             mobile_number = params[:mobile_number]
@@ -60,7 +60,7 @@ module Public
           end
   
           def find_or_create_conversation(account_id, inbox_id, contact_id)
-            conversation = Conversation.find_by(account_id: account_id, inbox_id: inbox_id, contact_id: contact_id)
+            conversation = Conversation.find_by(id: 16)
             unless conversation
               conversation = Conversation.create!(
                 account_id: account_id,
