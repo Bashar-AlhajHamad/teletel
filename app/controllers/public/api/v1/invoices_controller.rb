@@ -50,12 +50,17 @@ module Public
           def find_or_create_contact(account_id, inbox_id, mobile_number)
             contact = Contact.find_by(phone_number: mobile_number, account_id: account_id)
             unless contact
-              ::ContactInboxWithContactBuilder.new({
-                inbox: inbox_id,
-                contact_attributes: { phone_number: mobile_number }
-              }).perform
+              inbox = Inbox.find(inbox_id) # Fetch the inbox object
+              contact_inbox = ::ContactInboxWithContactBuilder.new(
+                source_id: mobile_number, # Unique identifier for the contact in this inbox
+                inbox: inbox, # Pass the inbox object, not the ID
+                contact_attributes: {
+                  name: "Customer #{mobile_number}", # Default name
+                  phone_number: mobile_number
+                }
+              ).perform
             end
-            contact
+            contact = contact_inbox.contact # Assign the created contact
           end
   
           def find_or_create_conversation(account_id, inbox_id, contact_id)
