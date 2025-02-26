@@ -515,13 +515,4 @@ Rails.application.routes.draw do
   # ----------------------------------------------------------------------
   # Routes for testing
   resources :widget_tests, only: [:index] unless Rails.env.production?
-
-  # Accounting System
-  namespace :public, defaults: { format: 'json' } do
-    namespace :api do
-      namespace :v1 do
-        post 'accounting_system/send_invoice', to: 'invoices#send_invoice'
-      end
-    end
-  end
 end
