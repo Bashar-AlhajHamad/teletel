@@ -55,7 +55,6 @@ module Public
                 source_id: mobile_number.gsub(/\D/, ''), # Unique identifier for the contact in this inbox
                 inbox: inbox, # Pass the inbox object, not the ID
                 contact_attributes: {
-                  name: "Customer #{mobile_number}", # Default name
                   phone_number: mobile_number
                 }
               ).perform
