@@ -24,7 +24,7 @@ module Public
             # Prepare the response
             response = {
               status: "success",
-              message: "Invoice sent successfully" + contact.id,
+              message: "Invoice sent successfully" + contact,
             }
   
             render json: response, status: :ok
