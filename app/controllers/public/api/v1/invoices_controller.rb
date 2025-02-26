@@ -13,13 +13,13 @@ module Public
             mobile_number = params[:mobile_number]
   
             # Find or create the contact
-            contact = find_or_create_contact(account_id, mobile_number)
+            contact = find_or_create_contact(account_id, inbox_id, mobile_number)
   
             # Find or create the conversation
             conversation = find_or_create_conversation(account_id, inbox_id, contact.id)
   
             # Send the invoice message
-            #message = send_message(conversation.id, "Hello, this is your invoice")
+            # message = send_message(conversation.id, "Hello, this is your invoice")
   
             # Prepare the response
             response = {
@@ -47,9 +47,14 @@ module Public
             end
           end
   
-          def find_or_create_contact(account_id, mobile_number)
+          def find_or_create_contact(account_id, inbox_id, mobile_number)
             contact = Contact.find_by(phone_number: mobile_number, account_id: account_id)
             unless contact
+              ::ContactInboxWithContactBuilder.new({
+                inbox: inbox_id,
+                contact_attributes: { phone_number: mobile_number }
+              }).perform
+
               contact = Contact.create!(
                 name: "Customer #{mobile_number}", # Default name
                 phone_number: mobile_number,
@@ -60,7 +65,7 @@ module Public
           end
   
           def find_or_create_conversation(account_id, inbox_id, contact_id)
-            conversation = Conversation.find_by(id: 16)
+            conversation = Conversation.find_by(account_id: account_id, inbox_id: inbox_id, contact_id: contact_id)
             unless conversation
               conversation = Conversation.create!(
                 account_id: account_id,
