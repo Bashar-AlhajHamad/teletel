@@ -59,7 +59,6 @@ module Public
                 name: "Customer #{mobile_number}", # Default name
                 phone_number: mobile_number,
                 account_id: account_id,
-                inbox_id: inbox_id
               )
             end
             contact
