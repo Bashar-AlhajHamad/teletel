@@ -7,7 +7,7 @@ module Public
           def send_invoice
             # Static account and inbox IDs
             account_id = 1
-            inbox_id = 2
+            inbox_id = 11
   
             # Get mobile number from the request body
             mobile_number = params[:mobile_number]
