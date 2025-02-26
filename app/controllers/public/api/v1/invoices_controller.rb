@@ -19,7 +19,7 @@ module Public
             conversation = find_or_create_conversation(account_id, inbox_id, contact.id)
   
             # Send the invoice message
-            message = send_message(conversation.id, "Hello, this is your invoice")
+            message = send_message(conversation, "Hello, this is your invoice")
   
             # Prepare the response
             response = {
@@ -83,12 +83,12 @@ module Public
             conversation
           end
   
-          def send_message(conversation_id, message_content)
-            Messages::MessageBuilder.new(nil, @conversation, {
+          def send_message(conversation, message_content)
+            Messages::MessageBuilder.new(nil, conversation, {
               content: message_content,
               account_id: 1, # Static account ID
               inbox_id: 2,  # Static inbox ID
-              conversation_id: conversation_id,
+              conversation_id: conversation.id,
               message_type: :outgoing
             }).perform
           end
