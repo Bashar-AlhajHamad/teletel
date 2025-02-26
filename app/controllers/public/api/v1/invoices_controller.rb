@@ -16,10 +16,10 @@ module Public
             contact = find_or_create_contact(account_id, inbox_id, mobile_number)
   
             # Find or create the conversation
-            #conversation = find_or_create_conversation(account_id, inbox_id, contact.id)
+            conversation = find_or_create_conversation(account_id, inbox_id, contact.id)
   
             # Send the invoice message
-            # message = send_message(conversation.id, "Hello, this is your invoice")
+            message = send_message(conversation.id, "Hello, this is your invoice")
   
             # Prepare the response
             response = {
