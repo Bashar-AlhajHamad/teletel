@@ -13,7 +13,7 @@ module Public
             mobile_number = params[:mobile_number]
   
             # Find or create the contact
-            contact = find_or_create_contact(account_id, inbox_id, mobile_number)
+            contact = find_or_create_contact(account_id, mobile_number)
   
             # Find or create the conversation
            # conversation = find_or_create_conversation(account_id, inbox_id, contact.id)
