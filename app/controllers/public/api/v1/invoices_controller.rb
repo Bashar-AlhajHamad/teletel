@@ -48,7 +48,7 @@ module Public
           end
   
           def find_or_create_contact(account_id, inbox_id, mobile_number)
-            contact = Contact.find_by(phone_number: mobile_number, account_id: account_id)
+            contact = Contact.find_by(phone_number: mobile_number)
             unless contact
               inbox = Inbox.find(inbox_id) # Fetch the inbox object
               contact_inbox = ::ContactInboxWithContactBuilder.new(
