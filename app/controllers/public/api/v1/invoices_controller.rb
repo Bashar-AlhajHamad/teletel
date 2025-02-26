@@ -76,7 +76,7 @@ module Public
             Message.create!(
               content: message_content,
               account_id: 1, # Static account ID
-              inbox_id: 11,  # Static inbox ID
+              inbox_id: 2,  # Static inbox ID
               conversation_id: conversation_id,
               message_type: :outgoing
             )
