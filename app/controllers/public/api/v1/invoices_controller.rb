@@ -84,7 +84,7 @@ module Public
           end
   
           def send_message(conversation_id, message_content)
-            Messages::MessageBuilder.new(user, @conversation, {
+            Messages::MessageBuilder.new(nil, @conversation, {
               content: message_content,
               account_id: 1, # Static account ID
               inbox_id: 2,  # Static inbox ID
