@@ -53,27 +53,22 @@ class GlobalConfig
     def db_fallback(config_key)
       case config_key
       when 'INSTALLATION_NAME'
-        yaml_string = "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: Teletel\n"
+        "Teletel"
       when 'BRAND_URL'
-        yaml_string = "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: https://www.teletel.io\n"
+        "https://www.teletel.io"
       when 'WIDGET_BRAND_URL'
-        yaml_string = "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: https://www.teletel.io\n"
+        "https://www.teletel.io"
       when 'TERMS_URL'
-        yaml_string = "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: https://www.teletel.io/terms-of-service\n"
+        "https://www.teletel.io/terms-of-service"
       when 'PRIVACY_URL'
-        yaml_string = "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: https://www.teletel.io/privacy-policy\n"
+        "https://www.teletel.io/privacy-policy"
       when 'CHATWOOT_SUPPORT_SCRIPT_URL'
-        yaml_string = "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: https://chat.teletel.io\n"
+        "https://chat.teletel.io"
       when 'BRAND_NAME'
-        yaml_string = "--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: Teletel\n"
+        "Teletel"
       else
-        return InstallationConfig.find_by(name: config_key)&.value
+        InstallationConfig.find_by(name: config_key)&.value
       end
-    
-      # Deserialize the YAML string and return the actual value
-      hash = YAML.safe_load(yaml_string)
-      hash[:value]
-    end    
-    
+    end
   end
 end
