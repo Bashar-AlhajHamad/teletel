@@ -53,7 +53,9 @@ class GlobalConfig
     def db_fallback(config_key)
       case config_key
       when 'INSTALLATION_NAME'
-        '"--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: Teletel\n"'
+        '"--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess
+        value: Teletel
+        "'
       when 'BRAND_URL'
         '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: https://www.teletel.io\n'
       when 'WIDGET_BRAND_URL'
