@@ -67,7 +67,7 @@ class GlobalConfig
       when 'BRAND_NAME'
         '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: Teletel\n'
       else
-        InstallationConfig.find_by(name: config_key)&.value
+        config_key
       end
     end
     
