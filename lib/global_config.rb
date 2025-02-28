@@ -51,7 +51,25 @@ class GlobalConfig
     end
 
     def db_fallback(config_key)
-      InstallationConfig.find_by(name: config_key)&.value
+      case config_key
+      when 'INSTALLATION_NAMNE'
+        '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: Teletel\n'
+      when 'BRAND_URL'
+        '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: https://www.teletel.io\n'
+      when 'WIDGET_BRAND_URL'
+        '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: https://www.teletel.io\n'
+      when 'TERMS_URL'
+        '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: https://www.teletel.io/terms-of-service\n'
+      when 'PRIVACY_URL'
+        '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: https://www.teletel.io/privacy-policy\n'
+      when 'CHATWOOT_SUPPORT_SCRIPT_URL'
+        '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: https://chat.teletel.io\n'
+      when 'BRAND_NAME'
+        '--- !ruby/hash:ActiveSupport::HashWithIndifferentAccess\nvalue: Teletel\n'
+      else
+        InstallationConfig.find_by(name: config_key)&.value
+      end
     end
+    
   end
 end
