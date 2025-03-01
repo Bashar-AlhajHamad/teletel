@@ -58,14 +58,14 @@ const menuItems = computed(() => {
         ninja.open({ parent: 'appearance_settings' });
       },
     },
-    {
+    /*{
       show: true,
       label: t('SIDEBAR_ITEMS.DOCS'),
       icon: 'i-lucide-book',
       link: 'https://www.chatwoot.com/hc/user-guide/en',
       nativeLink: true,
       target: '_blank',
-    },
+    },*/
     {
       show: currentUser.value.type === 'SuperAdmin',
       label: t('SIDEBAR_ITEMS.SUPER_ADMIN_CONSOLE'),

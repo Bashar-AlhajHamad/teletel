@@ -602,7 +602,7 @@ const countries = [
   {
     name: 'Iraq',
     dial_code: '+964',
-    emoji: '🇮🇷',
+    emoji: 'iq',
     id: 'IQ',
   },
   {
