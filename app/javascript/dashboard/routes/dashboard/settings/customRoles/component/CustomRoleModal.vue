@@ -1,5 +1,5 @@
 <script setup>
-import { ref, reactive, computed, onMounted, watch } from 'vue';
+import { ref, reactive, computed, onMounted } from 'vue';
 import { useStore } from 'dashboard/composables/store';
 import { useI18n } from 'vue-i18n';
 import { useVuelidate } from '@vuelidate/core';
@@ -7,9 +7,9 @@ import { required, minLength } from '@vuelidate/validators';
 import { useAlert } from 'dashboard/composables';
 import {
   AVAILABLE_CUSTOM_ROLE_PERMISSIONS,
-  MANAGE_ALL_CONVERSATION_PERMISSIONS,
-  CONVERSATION_UNASSIGNED_PERMISSIONS,
-  CONVERSATION_PARTICIPATING_PERMISSIONS,
+  CAMPAIGN_PERMISSIONS,
+  REPORTS_PERMISSIONS,
+  CONTACT_PERMISSIONS,
 } from 'dashboard/constants/permissions.js';
 
 import WootSubmitButton from 'dashboard/components/buttons/FormSubmitButton.vue';
@@ -58,42 +58,108 @@ const resetForm = () => {
 };
 
 const populateEditForm = () => {
+  if (!props.selectedRole) return; // ✅ Prevents errors if selectedRole is undefined
+
   name.value = props.selectedRole.name || '';
   description.value = props.selectedRole.description || '';
-  selectedPermissions.value = props.selectedRole.permissions || [];
+
+  // Ensure permissions are mapped to an array of action names
+  selectedPermissions.value = props.selectedRole.permissions
+    ? props.selectedRole.permissions.map(p => p.action)
+    : [];
 };
 
-watch(
-  selectedPermissions,
-  (newValue, oldValue) => {
-    // Check if manage all conversation permission is added or removed
-    const hasAddedManageAllConversation =
-      newValue.includes(MANAGE_ALL_CONVERSATION_PERMISSIONS) &&
-      !oldValue.includes(MANAGE_ALL_CONVERSATION_PERMISSIONS);
-    const hasRemovedManageAllConversation =
-      oldValue.includes(MANAGE_ALL_CONVERSATION_PERMISSIONS) &&
-      !newValue.includes(MANAGE_ALL_CONVERSATION_PERMISSIONS);
+const allPermissions = computed(() => [
+  ...AVAILABLE_CUSTOM_ROLE_PERMISSIONS,
+  ...CAMPAIGN_PERMISSIONS,
+  ...REPORTS_PERMISSIONS,
+  ...CONTACT_PERMISSIONS,
+]);
 
-    if (hasAddedManageAllConversation) {
-      // If manage all conversation permission is added,
-      // then add unassigned and participating permissions automatically
-      selectedPermissions.value = [
-        ...new Set([
-          ...selectedPermissions.value,
-          CONVERSATION_UNASSIGNED_PERMISSIONS,
-          CONVERSATION_PARTICIPATING_PERMISSIONS,
-        ]),
-      ];
-    } else if (hasRemovedManageAllConversation) {
-      // If manage all conversation permission is removed,
-      // then only remove manage all conversation permission
-      selectedPermissions.value = selectedPermissions.value.filter(
-        p => p !== MANAGE_ALL_CONVERSATION_PERMISSIONS
-      );
-    }
-  },
-  { deep: true }
+// Check if ALL permissions are selected
+const isAllSelected = computed(() =>
+  allPermissions.value.every(permission =>
+    selectedPermissions.value.includes(permission)
+  )
 );
+
+// Toggle ALL permissions
+const toggleSelectAll = event => {
+  selectedPermissions.value = event.target.checked
+    ? [...allPermissions.value]
+    : [];
+};
+
+// Campaign Permissions
+const isCampaignsAllSelected = computed(() =>
+  CAMPAIGN_PERMISSIONS.every(permission =>
+    selectedPermissions.value.includes(permission)
+  )
+);
+
+const toggleCampaignsSelectAll = event => {
+  selectedPermissions.value = event.target.checked
+    ? [...new Set([...selectedPermissions.value, ...CAMPAIGN_PERMISSIONS])]
+    : selectedPermissions.value.filter(p => !CAMPAIGN_PERMISSIONS.includes(p));
+};
+
+// Report Permissions
+const isReportsAllSelected = computed(() =>
+  REPORTS_PERMISSIONS.every(permission =>
+    selectedPermissions.value.includes(permission)
+  )
+);
+
+const toggleReportsSelectAll = event => {
+  selectedPermissions.value = event.target.checked
+    ? [...new Set([...selectedPermissions.value, ...REPORTS_PERMISSIONS])]
+    : selectedPermissions.value.filter(p => !REPORTS_PERMISSIONS.includes(p));
+};
+
+// Contact Permissions
+const isContactsAllSelected = computed(() =>
+  CONTACT_PERMISSIONS.every(permission =>
+    selectedPermissions.value.includes(permission)
+  )
+);
+
+const toggleContactsSelectAll = event => {
+  selectedPermissions.value = event.target.checked
+    ? [...new Set([...selectedPermissions.value, ...CONTACT_PERMISSIONS])]
+    : selectedPermissions.value.filter(p => !CONTACT_PERMISSIONS.includes(p));
+};
+
+// Labels for permissions in the form
+const permissionLabels = {
+  campaign_show: 'Show',
+  campaign_create: 'Create',
+  campaign_update: 'Update',
+  campaign_destroy: 'Destroy',
+  reports_show: 'Show',
+  reports_download: 'Download',
+  contact_show: 'Show',
+  contact_create: 'Create',
+  contact_update: 'Update',
+  contact_destroy: 'Destroy',
+  contact_import: 'Import',
+  contact_export: 'Export',
+  contact_merge: 'Merge',
+  contact_block: 'Block',
+};
+
+// Simplify permission translation logic
+const getPermissionLabel = permission => {
+  if (permissionLabels[permission]) {
+    return permissionLabels[permission];
+  }
+  return permission; // Fallback in case the label is missing
+};
+
+const getTranslationKey = base => {
+  return props.mode === 'edit'
+    ? `CUSTOM_ROLE.EDIT.${base}`
+    : `CUSTOM_ROLE.ADD.${base}`;
+};
 
 onMounted(() => {
   if (props.mode === 'edit') {
@@ -102,12 +168,6 @@ onMounted(() => {
   // Focus the name input when mounted
   nameInput.value?.focus();
 });
-
-const getTranslationKey = base => {
-  return props.mode === 'edit'
-    ? `CUSTOM_ROLE.EDIT.${base}`
-    : `CUSTOM_ROLE.ADD.${base}`;
-};
 
 const modalTitle = computed(() => t(getTranslationKey('TITLE')));
 const modalDescription = computed(() => t(getTranslationKey('DESC')));
@@ -153,19 +213,21 @@ const isSubmitDisabled = computed(
 </script>
 
 <template>
-  <div class="flex flex-col h-auto overflow-auto">
+  <div class="flex flex-col h-auto overflow-auto w-full mt-2 p-2">
     <woot-modal-header
       :header-title="modalTitle"
       :header-content="modalDescription"
     />
     <form class="flex flex-col w-full" @submit.prevent="handleCustomRole">
-      <div class="w-full">
+      <!-- Name Input -->
+      <div class="w-full mb-6">
         <label :class="{ 'text-red-500': v$.name.$error }">
           {{ $t('CUSTOM_ROLE.FORM.NAME.LABEL') }}
           <input
             ref="nameInput"
             v-model.trim="name"
             type="text"
+            class="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-1 focus:ring-woot"
             :class="{ '!border-red-500': v$.name.$error }"
             :placeholder="$t('CUSTOM_ROLE.FORM.NAME.PLACEHOLDER')"
             @blur="v$.name.$touch"
@@ -173,41 +235,166 @@ const isSubmitDisabled = computed(
         </label>
       </div>
 
-      <div class="w-full">
+      <!-- Description Input -->
+      <div class="w-full mb-6">
         <label :class="{ 'text-red-500': v$.description.$error }">
           {{ $t('CUSTOM_ROLE.FORM.DESCRIPTION.LABEL') }}
-
           <textarea
             v-model="description"
-            :rows="3"
+            rows="6"
+            class="w-full mt-1 px-3 py-2 border rounded-lg focus:ring-1 focus:ring-woot"
             :class="{ error: v$.description.$error }"
             :placeholder="$t('CUSTOM_ROLE.FORM.DESCRIPTION.PLACEHOLDER')"
+            required
             @blur="v$.description.$touch"
           />
         </label>
       </div>
 
-      <div class="w-full">
-        <label :class="{ 'text-red-500': v$.selectedPermissions.$error }">
-          {{ $t('CUSTOM_ROLE.FORM.PERMISSIONS.LABEL') }}
-        </label>
-        <div class="flex flex-col gap-2.5 mb-4 mt-2">
-          <div
-            v-for="permission in AVAILABLE_CUSTOM_ROLE_PERMISSIONS"
-            :key="permission"
-            class="flex items-center"
-          >
+      <!-- Permissions Section -->
+      <div class="mb-6">
+        <div class="flex justify-between items-center">
+          <h3 class="text-lg font-semibold mb-4">
+            {{ $t('CUSTOM_ROLE.FORM.CUSTOMIZE_RESPONSIBILITIES') }}
+          </h3>
+          <!-- Global Select All -->
+          <label class="flex items-center text-base font-medium">
             <input
-              :id="permission"
-              v-model="selectedPermissions"
               type="checkbox"
-              :value="permission"
-              name="permissions"
-              class="ltr:mr-2 rtl:ml-2"
+              class="form-checkbox h-5 w-5 text-woot-500"
+              :checked="isAllSelected"
+              @change="toggleSelectAll"
             />
-            <label :for="permission" class="text-sm font-normal">
-              {{ $t(`CUSTOM_ROLE.PERMISSIONS.${permission.toUpperCase()}`) }}
-            </label>
+            <span class="ml-2">{{
+              $t('CUSTOM_ROLE.FORM.SELECT_ALL_PERMISSIONS')
+            }}</span>
+          </label>
+        </div>
+
+        <!-- Permission Groups -->
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <!-- Campaigns -->
+          <div
+            class="p-4 rounded-lg border border-slate-200 h-[300px] flex flex-col"
+          >
+            <div class="mb-3 font-medium text-slate-700">
+              {{ $t('CUSTOM_ROLE.FORM.CAMPAIGNS.LABEL') }}
+            </div>
+            <div class="flex flex-col flex-grow justify-between gap-4">
+              <div class="flex flex-wrap gap-2">
+                <label
+                  v-for="permission in CAMPAIGN_PERMISSIONS"
+                  :key="permission"
+                  class="flex items-center"
+                >
+                  <input
+                    v-model="selectedPermissions"
+                    type="checkbox"
+                    :value="permission"
+                    class="form-checkbox h-4 w-4 text-woot-500"
+                  />
+                  <span class="ml-2 text-sm">
+                    {{ getPermissionLabel(permission) }}
+                  </span>
+                </label>
+              </div>
+              <!-- Keeps this section at the bottom -->
+              <div class="border-t border-slate-200 pt-2 mt-auto">
+                <label class="flex items-center text-sm text-slate-600">
+                  <input
+                    type="checkbox"
+                    class="form-checkbox h-4 w-4 text-woot-500"
+                    :checked="isCampaignsAllSelected"
+                    @change="toggleCampaignsSelectAll"
+                  />
+                  <span class="ml-2">{{
+                    $t('CUSTOM_ROLE.FORM.SELECT_ALL')
+                  }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Reports -->
+          <div
+            class="p-4 rounded-lg border border-slate-200 h-[300px] flex flex-col"
+          >
+            <div class="mb-3 font-medium text-slate-700">
+              {{ $t('CUSTOM_ROLE.FORM.REPORTS.LABEL') }}
+            </div>
+            <div class="flex flex-col flex-grow justify-between gap-4">
+              <div class="flex flex-wrap gap-2">
+                <label
+                  v-for="permission in REPORTS_PERMISSIONS"
+                  :key="permission"
+                  class="flex items-center"
+                >
+                  <input
+                    v-model="selectedPermissions"
+                    type="checkbox"
+                    :value="permission"
+                    class="form-checkbox h-4 w-4 text-woot-500"
+                  />
+                  <span class="ml-2 text-sm">{{
+                    getPermissionLabel(permission)
+                  }}</span>
+                </label>
+              </div>
+              <div class="border-t border-slate-200 pt-2 mt-auto">
+                <label class="flex items-center text-sm text-slate-600">
+                  <input
+                    type="checkbox"
+                    class="form-checkbox h-4 w-4 text-woot-500"
+                    :checked="isReportsAllSelected"
+                    @change="toggleReportsSelectAll"
+                  />
+                  <span class="ml-2">{{
+                    $t('CUSTOM_ROLE.FORM.SELECT_ALL')
+                  }}</span>
+                </label>
+              </div>
+            </div>
+          </div>
+
+          <!-- Contacts -->
+          <div
+            class="p-4 rounded-lg border border-slate-200 h-[300px] flex flex-col"
+          >
+            <div class="mb-3 font-medium text-slate-700">
+              {{ $t('CUSTOM_ROLE.FORM.CONTACTS.LABEL') }}
+            </div>
+            <div class="flex flex-col flex-grow justify-between gap-4">
+              <div class="flex flex-wrap gap-2">
+                <label
+                  v-for="permission in CONTACT_PERMISSIONS"
+                  :key="permission"
+                  class="flex items-center"
+                >
+                  <input
+                    v-model="selectedPermissions"
+                    type="checkbox"
+                    :value="permission"
+                    class="form-checkbox h-4 w-4 text-woot-500"
+                  />
+                  <span class="ml-2 text-sm">{{
+                    getPermissionLabel(permission)
+                  }}</span>
+                </label>
+              </div>
+              <div class="border-t border-slate-200 pt-2 mt-auto">
+                <label class="flex items-center text-sm text-slate-600">
+                  <input
+                    type="checkbox"
+                    class="form-checkbox h-4 w-4 text-woot-500"
+                    :checked="isContactsAllSelected"
+                    @change="toggleContactsSelectAll"
+                  />
+                  <span class="ml-2">{{
+                    $t('CUSTOM_ROLE.FORM.SELECT_ALL')
+                  }}</span>
+                </label>
+              </div>
+            </div>
           </div>
         </div>
       </div>

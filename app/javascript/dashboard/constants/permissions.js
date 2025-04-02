@@ -2,9 +2,21 @@ export const AVAILABLE_CUSTOM_ROLE_PERMISSIONS = [
   'conversation_manage',
   'conversation_unassigned_manage',
   'conversation_participating_manage',
-  'contact_manage',
-  'report_manage',
   'knowledge_base_manage',
+  'campaign_show',
+  'campaign_create',
+  'campaign_update',
+  'campaign_destroy',
+  'reports_show',
+  'reports_download',
+  'contact_show',
+  'contact_create',
+  'contact_update',
+  'contact_destroy',
+  'contact_import',
+  'contact_export',
+  'contact_merge',
+  'contact_block',
 ];
 
 export const ROLES = ['agent', 'administrator'];
@@ -23,16 +35,37 @@ export const CONVERSATION_UNASSIGNED_PERMISSIONS =
 export const CONVERSATION_PARTICIPATING_PERMISSIONS =
   'conversation_participating_manage';
 
-export const CONTACT_PERMISSIONS = 'contact_manage';
+export const CAMPAIGN_PERMISSIONS = [
+  'campaign_show',
+  'campaign_create',
+  'campaign_update',
+  'campaign_destroy',
+];
 
-export const REPORTS_PERMISSIONS = 'report_manage';
+export const CONTACT_PERMISSIONS = [
+  'contact_show',
+  'contact_create',
+  'contact_update',
+  'contact_destroy',
+  'contact_import',
+  'contact_export',
+  'contact_merge',
+  'contact_block',
+];
+
+export const REPORTS_PERMISSIONS = ['reports_show', 'reports_download'];
 
 export const PORTAL_PERMISSIONS = 'knowledge_base_manage';
 
 export const ASSIGNEE_TYPE_TAB_PERMISSIONS = {
   me: {
     count: 'mineCount',
-    permissions: [...ROLES, ...CONVERSATION_PERMISSIONS],
+    permissions: [
+      ...ROLES,
+      ...CONVERSATION_PERMISSIONS,
+      ...CONTACT_PERMISSIONS,
+      ...CAMPAIGN_PERMISSIONS,
+    ],
   },
   unassigned: {
     count: 'unAssignedCount',
