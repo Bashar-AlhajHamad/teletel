@@ -44,7 +44,6 @@ json.muted conversation.muted?
 json.snoozed_until conversation.snoozed_until
 json.status conversation.status
 json.created_at conversation.created_at.to_i
-json.updated_at conversation.updated_at.to_f
 json.timestamp conversation.last_activity_at.to_i
 json.first_reply_created_at conversation.first_reply_created_at.to_i
 json.unread_count conversation.unread_incoming_messages.count
@@ -53,5 +52,4 @@ json.last_activity_at conversation.last_activity_at.to_i
 json.priority conversation.priority
 json.waiting_since conversation.waiting_since.to_i.to_i
 json.sla_policy_id conversation.sla_policy_id
-json.team_id conversation.team_id
 json.partial! 'enterprise/api/v1/conversations/partials/conversation', conversation: conversation if ChatwootApp.enterprise?

@@ -1,109 +1,196 @@
 require 'rails_helper'
 
-RSpec.describe ConversationFinder do
-  let(:account) { create(:account) }
-  let(:admin) { create(:user, account: account, role: :administrator) }
-  let(:agent) { create(:user, account: account, role: :agent) }
-  let(:agent_2) { create(:user, account: account, role: :agent) }
-  let(:inbox) { create(:inbox, account: account) }
-  let(:team) { create(:team, account: account) }
+describe ConversationFinder do
+  subject(:conversation_finder) { described_class.new(user_1, params) }
 
-  # Set Current.account and add members to inbox before each test
+  let!(:account) { create(:account) }
+  let!(:user_1) { create(:user, account: account) }
+  let!(:user_2) { create(:user, account: account) }
+  let!(:admin) { create(:user, account: account, role: :administrator) }
+  let!(:inbox) { create(:inbox, account: account, enable_auto_assignment: false) }
+  let!(:contact_inbox) { create(:contact_inbox, inbox: inbox, source_id: 'testing_source_id') }
+  let!(:restricted_inbox) { create(:inbox, account: account) }
+
   before do
+    create(:inbox_member, user: user_1, inbox: inbox)
+    create(:inbox_member, user: user_2, inbox: inbox)
+    create(:conversation, account: account, inbox: inbox, assignee: user_1)
+    create(:conversation, account: account, inbox: inbox, assignee: user_1)
+    create(:conversation, account: account, inbox: inbox, assignee: user_1, status: 'resolved')
+    create(:conversation, account: account, inbox: inbox, assignee: user_2, contact_inbox: contact_inbox)
+    # unassigned conversation
+    create(:conversation, account: account, inbox: inbox)
     Current.account = account
-    inbox.add_members([admin.id, agent.id, agent_2.id])
   end
-
-  # Reset Current after each test for isolation
-  after do
-    Current.reset
-  end
-  let(:team_2) { create(:team, account: account) }
-
-  # Create team memberships
-  let!(:team_member) { create(:team_member, user: agent, team: team) }
-
-  # Create conversations
-  let!(:conversation_1) { create(:conversation, account: account, inbox: inbox, assignee: agent) }
-  let!(:conversation_2) { create(:conversation, account: account, inbox: inbox, assignee: agent_2) }
-  let!(:conversation_3) { create(:conversation, account: account, inbox: inbox, team: team) }
-  let!(:conversation_4) { create(:conversation, account: account, inbox: inbox, team: team_2) }
-  let!(:conversation_5) { create(:conversation, account: account, inbox: inbox) }
 
   describe '#perform' do
-    context 'when user is an admin' do
-      it 'returns all conversations for the account' do
-        result = described_class.new(admin, {}).perform
-        expect(result[:conversations].length).to eq(5)
+    context 'with status' do
+      let(:params) { { status: 'open', assignee_type: 'me' } }
+
+      it 'filter conversations by status' do
+        result = conversation_finder.perform
+        expect(result[:conversations].length).to be 2
       end
     end
 
-    context 'when user is an agent' do
-      it 'returns only conversations assigned to the agent or their teams' do
-        result = described_class.new(agent, {}).perform
-        
-        # UPDATED EXPECTATION: Should ONLY see conversations assigned to them (conversation_1)
-        # Should NOT see conversations assigned only to their team (conversation_3)
-        # Should NOT see other conversations (2, 4, 5)
-        expect(result[:conversations]).to include(conversation_1)
-        expect(result[:conversations]).not_to include(conversation_3) # Changed expectation
-        expect(result[:conversations]).not_to include(conversation_2)
-        expect(result[:conversations]).not_to include(conversation_4)
-        expect(result[:conversations]).not_to include(conversation_5)
-        expect(result[:conversations].length).to eq(1) # Changed expectation
+    context 'with inbox' do
+      let!(:restricted_conversation) { create(:conversation, account: account, inbox_id: restricted_inbox.id) }
+
+      it 'returns conversation from any inbox if its admin' do
+        params = { inbox_id: restricted_inbox.id }
+        result = described_class.new(admin, params).perform
+
+        expect(result[:conversations].map(&:id)).to include(restricted_conversation.id)
       end
 
-      it 'returns an empty array for "me" filter when no conversations are assigned to the agent' do
-        # Create an agent with no assigned conversations in scope
-        agent_no_assignments = create(:user, account: account, role: :agent)
-        inbox.add_members([agent_no_assignments.id]) # Ensure agent has inbox access
+      it 'returns conversation from inbox if agent is its member' do
+        params = { inbox_id: restricted_inbox.id }
+        create(:inbox_member, user: user_1, inbox: restricted_inbox)
+        result = described_class.new(user_1, params).perform
 
-        result = described_class.new(agent_no_assignments, { assignee_type: 'me' }).perform
-        expect(result[:conversations]).to be_empty
-      end
-      
-      context 'when using assignee_type filter' do
-        it 'applies privacy rules and then filters by assignee type' do
-          # Filter for "me" - should only show conversations assigned to the agent (conv_1)
-          result_me = described_class.new(agent, { assignee_type: 'me' }).perform
-          expect(result_me[:conversations]).to contain_exactly(conversation_1)
-          
-          # UPDATED EXPECTATION: Filter for "unassigned" - should always be empty for agents
-          # due to the strict 'assigned only' policy scope.
-          result_unassigned = described_class.new(agent, { assignee_type: 'unassigned' }).perform
-          expect(result_unassigned[:conversations]).to be_empty # Changed expectation
-          
-          # UPDATED EXPECTATION: Filter for "assigned" - should only show conversations assigned to the agent (conv_1)
-          # because the base scope already restricts visibility to only assigned conversations.
-          # conv_2 is assigned to agent_2 but visible via policy scope if agent_2 is in agent's team - needs check,
-          # let's assume for now it only shows conv_1 based on strict policy)
-          # It should NOT show conv_4 (wrong team) or conv_5 (unassigned).
-          # Let's refine the expectation based on the policy:
-          # Agent sees conv_1 (assigned to self) and conv_3 (team).
-          # Filtering by 'assigned' means assignee_id IS NOT NULL.
-          # So, it should only return conv_1 from the visible set.
-          result_assigned = described_class.new(agent, { assignee_type: 'assigned' }).perform
-          expect(result_assigned[:conversations]).to contain_exactly(conversation_1) # Expectation remains the same, but reasoning updated
-        end
+        expect(result[:conversations].map(&:id)).to include(restricted_conversation.id)
       end
 
-      context 'when agent is part of multiple teams' do
-        before do
-          create(:team_member, user: agent, team: team_2)
+      it 'does not return conversations from inboxes where agent is not a member' do
+        params = { inbox_id: restricted_inbox.id }
+        result = described_class.new(user_1, params).perform
+
+        expect(result[:conversations].map(&:id)).not_to include(restricted_conversation.id)
+      end
+    end
+
+    context 'with assignee_type all' do
+      let(:params) { { assignee_type: 'all' } }
+
+      it 'filter conversations by assignee type all' do
+        result = conversation_finder.perform
+        expect(result[:conversations].length).to be 4
+      end
+    end
+
+    context 'with assignee_type unassigned' do
+      let(:params) { { assignee_type: 'unassigned' } }
+
+      it 'filter conversations by assignee type unassigned' do
+        result = conversation_finder.perform
+        expect(result[:conversations].length).to be 1
+      end
+    end
+
+    context 'with status all' do
+      let(:params) { { status: 'all' } }
+
+      it 'returns all conversations' do
+        result = conversation_finder.perform
+        expect(result[:conversations].length).to be 5
+      end
+    end
+
+    context 'with assignee_type assigned' do
+      let(:params) { { assignee_type: 'assigned' } }
+
+      it 'filter conversations by assignee type assigned' do
+        result = conversation_finder.perform
+        expect(result[:conversations].length).to be 3
+      end
+
+      it 'returns the correct meta' do
+        result = conversation_finder.perform
+        expect(result[:count]).to eq({
+                                       mine_count: 2,
+                                       assigned_count: 3,
+                                       unassigned_count: 1,
+                                       all_count: 4
+                                     })
+      end
+    end
+
+    context 'with team' do
+      let(:team) { create(:team, account: account) }
+      let(:params) { { team_id: team.id } }
+
+      it 'filter conversations by team' do
+        create(:conversation, account: account, inbox: inbox, team: team)
+        result = conversation_finder.perform
+        expect(result[:conversations].length).to be 1
+      end
+    end
+
+    context 'with labels' do
+      let(:params) { { labels: ['resolved'] } }
+
+      it 'filter conversations by labels' do
+        conversation = inbox.conversations.first
+        conversation.update_labels('resolved')
+
+        result = conversation_finder.perform
+        expect(result[:conversations].length).to be 1
+      end
+    end
+
+    context 'with source_id' do
+      let(:params) { { source_id: 'testing_source_id' } }
+
+      it 'filter conversations by source id' do
+        result = conversation_finder.perform
+        expect(result[:conversations].length).to be 1
+      end
+    end
+
+    context 'without source' do
+      let(:params) { {} }
+
+      it 'returns conversations with any source' do
+        result = conversation_finder.perform
+        expect(result[:conversations].length).to be 4
+      end
+    end
+
+    context 'with updated_within' do
+      let(:params) { { updated_within: 20, assignee_type: 'unassigned', sort_by: 'created_at_asc' } }
+
+      it 'filters based on params, sort order but returns all conversations without pagination with in time range' do
+        # value of updated_within is in seconds
+        # write spec based on that
+        conversations = create_list(:conversation, 50, account: account,
+                                                       inbox: inbox, assignee: nil,
+                                                       updated_at: Time.now.utc - 30.seconds,
+                                                       created_at: Time.now.utc - 30.seconds)
+        # update updated_at of 27 conversations to be with in 20 seconds
+        conversations[0..27].each do |conversation|
+          conversation.update(updated_at: Time.now.utc - 10.seconds)
         end
-        
-        it 'returns conversations from all their teams plus assigned ones' do
-          result = described_class.new(agent, {}).perform
-          
-          # UPDATED EXPECTATION: Agent should ONLY see conversations assigned directly to them (conv_1)
-          # Team membership (team_2 added) should NOT grant visibility to team conversations (conv_3, conv_4).
-          expect(result[:conversations]).to include(conversation_1)
-          expect(result[:conversations]).not_to include(conversation_3) # Changed expectation
-          expect(result[:conversations]).not_to include(conversation_4) # Changed expectation
-          expect(result[:conversations]).not_to include(conversation_2)
-          expect(result[:conversations]).not_to include(conversation_5)
-          expect(result[:conversations].length).to eq(1) # Changed expectation
-        end
+        result = conversation_finder.perform
+        # pagination is not applied
+        # filters are applied
+        # modified conversations + 1 conversation created during set up
+        expect(result[:conversations].length).to be 29
+        # ensure that the conversations are sorted by created_at
+        expect(result[:conversations].first.created_at).to be < result[:conversations].last.created_at
+      end
+    end
+
+    context 'with pagination' do
+      let(:params) { { status: 'open', assignee_type: 'me', page: 1 } }
+
+      it 'returns paginated conversations' do
+        create_list(:conversation, 50, account: account, inbox: inbox, assignee: user_1)
+        result = conversation_finder.perform
+        expect(result[:conversations].length).to be 25
+      end
+    end
+
+    context 'with unattended' do
+      let(:params) { { status: 'open', assignee_type: 'me', conversation_type: 'unattended' } }
+
+      it 'returns unattended conversations' do
+        create(:conversation, account: account, first_reply_created_at: Time.now.utc, assignee: user_1) # attended_conversation
+        create(:conversation, account: account, first_reply_created_at: nil, assignee: user_1) # unattended_conversation_no_first_reply
+        create(:conversation, account: account, first_reply_created_at: Time.now.utc,
+                              assignee: user_1, waiting_since: Time.now.utc) # unattended_conversation_waiting_since
+
+        result = conversation_finder.perform
+        expect(result[:conversations].length).to be 2
       end
     end
   end
