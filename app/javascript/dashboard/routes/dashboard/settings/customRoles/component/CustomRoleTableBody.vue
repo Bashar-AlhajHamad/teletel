@@ -1,4 +1,7 @@
 <script setup>
+import { useI18n } from 'vue-i18n';
+import { getI18nKey } from 'dashboard/routes/dashboard/settings/helper/settingsHelper';
+
 defineProps({
   roles: {
     type: Array,
@@ -12,25 +15,11 @@ defineProps({
 
 const emit = defineEmits(['edit', 'delete']);
 
+const { t } = useI18n();
+
 const getFormattedPermissions = role => {
-  // Ensure role.permissions is a valid array
-  if (
-    !role.permissions ||
-    !Array.isArray(role.permissions) ||
-    role.permissions.length === 0
-  ) {
-    return 'No permissions assigned';
-  }
-
   return role.permissions
-    .map(event => {
-      if (!event || typeof event !== 'object') {
-        return 'Invalid permission';
-      }
-
-      // Ensure event.action exists
-      return event.action ? event.action : 'Unknown action';
-    })
+    .map(event => t(getI18nKey('CUSTOM_ROLE.PERMISSIONS', event)))
     .join(', ');
 };
 </script>

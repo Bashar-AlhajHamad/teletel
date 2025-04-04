@@ -2,9 +2,9 @@
   "CUSTOM_ROLE": {
     "HEADER": "Custom Roles",
     "LEARN_MORE": "Learn more about custom roles",
-    "DESCRIPTION": "Custom roles allow you to define specific permissions for your team members.",
-    "HEADER_BTN_TXT": "Add Role",
-    "LOADING": "Fetching custom roles",
+    "DESCRIPTION": "Custom roles are roles that are created by the account owner or admin. These roles can be assigned to agents to define their access and permissions within the account. Custom roles can be created with specific permissions and access levels to suit the requirements of the organization.",
+    "HEADER_BTN_TXT": "Add custom role",
+    "LOADING": "Fetching custom roles...",
     "SEARCH_404": "There are no items matching this query.",
     "PAYWALL": {
       "TITLE": "Upgrade to create custom roles",
@@ -19,7 +19,7 @@
       "ASK_ADMIN": "Please reach out to your administrator for the upgrade."
     },
     "LIST": {
-      "404": "No custom roles exist in this account.",
+      "404": "There are no custom roles available in this account.",
       "TITLE": "Manage custom roles",
       "DESC": "Custom roles are roles that are created by the account owner or admin. These roles can be assigned to agents to define their access and permissions within the account. Custom roles can be created with specific permissions and access levels to suit the requirements of the organization.",
       "TABLE_HEADER": {
@@ -33,64 +33,36 @@
       "CONVERSATION_MANAGE": "Manage all conversations",
       "CONVERSATION_UNASSIGNED_MANAGE": "Manage unassigned conversations and those assigned to them",
       "CONVERSATION_PARTICIPATING_MANAGE": "Manage participating conversations and those assigned to them",
-      "KNOWLEDGE_BASE_MANAGE": "Manage knowledge base",
-      "CAMPAIGN_SHOW": "View",
-      "CAMPAIGN_CREATE": "Create",
-      "CAMPAIGN_UPDATE": "Update",
-      "CAMPAIGN_DESTROY": "Delete",
-      "REPORTS_SHOW": "View",
-      "REPORTS_DOWNLOAD": "Download",
-      "CONTACT_SHOW": "View",
-      "CONTACT_CREATE": "Create",
-      "CONTACT_UPDATE": "Update",
-      "CONTACT_DESTROY": "Delete",
-      "CONTACT_IMPORT": "Import",
-      "CONTACT_EXPORT": "Export",
-      "CONTACT_MERGE": "Merge",
-      "CONTACT_BLOCK": "Block/Unblock"
+      "CONTACT_MANAGE": "Manage contacts",
+      "REPORT_MANAGE": "Manage reports",
+      "KNOWLEDGE_BASE_MANAGE": "Manage knowledge base"
     },
     "FORM": {
-      "CUSTOMIZE_RESPONSIBILITIES": "Customize this role responsibilities",
-      "SELECT_ALL_PERMISSIONS": "Select all permissions",
-      "SELECT_ALL": "Select all",
       "NAME": {
-        "LABEL": "Role Name",
-        "PLACEHOLDER": "Please enter a name"
+        "LABEL": "Name",
+        "PLACEHOLDER": "Please enter a name.",
+        "ERROR": "Name is required."
       },
       "DESCRIPTION": {
-        "LABEL": "Role Description",
-        "PLACEHOLDER": "Please enter a content"
+        "LABEL": "Description",
+        "PLACEHOLDER": "Please enter a description.",
+        "ERROR": "Description is required."
       },
-      "CAMPAIGNS": {
-        "LABEL": "Campaigns"
+      "PERMISSIONS": {
+        "LABEL": "Permissions",
+        "ERROR": "Permissions are required."
       },
-      "REPORTS": {
-        "LABEL": "Reports"
-      },
-      "CONTACTS": {
-        "LABEL": "Contacts"
-      },
-      "SHOW": "View",
-      "CREATE": "Create",
-      "UPDATE": "Update",
-      "DESTROY": "Delete",
-      "DOWNLOAD": "Download",
-      "IMPORT": "Import",
-      "EXPORT": "Export",
-      "MERGE": "Merge",
-      "BLOCK": "Block/Unblock",
       "CANCEL_BUTTON_TEXT": "Cancel",
       "API": {
         "ERROR_MESSAGE": "Could not connect to Woot server. Please try again."
       }
     },
     "ADD": {
-      "TITLE": "Add Role",
-      "DESC": "Roles are group of permissions that agents can do.",
+      "TITLE": "Add custom role",
+      "DESC": " Custom roles allows you to create roles with specific permissions and access levels to suit the requirements of the organization.",
       "SUBMIT": "Submit",
       "API": {
-        "SUCCESS_MESSAGE": "Role created successfully",
-        "ERROR_MESSAGE": "Could not create role"
+        "SUCCESS_MESSAGE": "Custom role added successfully."
       }
     },
     "EDIT": {
@@ -99,8 +71,7 @@
       "DESC": " Custom roles allows you to create roles with specific permissions and access levels to suit the requirements of the organization.",
       "SUBMIT": "Update",
       "API": {
-        "SUCCESS_MESSAGE": "Role updated successfully",
-        "ERROR_MESSAGE": "Could not update role"
+        "SUCCESS_MESSAGE": "Custom role updated successfully."
       }
     },
     "DELETE": {
