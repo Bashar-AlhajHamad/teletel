@@ -27,6 +27,7 @@ class AccountUser < ApplicationRecord
 
   belongs_to :account
   belongs_to :user
+  belongs_to :custom_role, optional: true
   belongs_to :inviter, class_name: 'User', optional: true
 
   enum role: { agent: 0, administrator: 1 }
@@ -52,7 +53,11 @@ class AccountUser < ApplicationRecord
   end
 
   def permissions
-    administrator? ? ['administrator'] : ['agent']
+    # If user is an administrator, they have full access
+    return ['administrator'] if administrator?
+
+    # If user has a custom role, fetch its permissions
+    custom_role ? custom_role.permissions.pluck(:controller, :action) : ['agent']
   end
 
   def push_event_data
