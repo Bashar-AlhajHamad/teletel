@@ -4,7 +4,7 @@ import SettingsLayout from '../SettingsLayout.vue';
 import BaseSettingsHeader from '../components/BaseSettingsHeader.vue';
 import CustomRoleModal from './component/CustomRoleModal.vue';
 import CustomRoleTableBody from './component/CustomRoleTableBody.vue';
-import CustomRolePaywall from './component/CustomRolePaywall.vue';
+// import CustomRolePaywall from './component/CustomRolePaywall.vue';
 import { computed, onMounted, ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useStore, useMapGetter } from 'dashboard/composables/store';
@@ -34,24 +34,26 @@ const deleteMessage = computed(() => {
   return ` ${activeResponse.value.name} ? `;
 });
 
-const isFeatureEnabledOnAccount = useMapGetter(
-  'accounts/isFeatureEnabledonAccount'
-);
+// const isFeatureEnabledOnAccount = useMapGetter(
+//   'accounts/isFeatureEnabledonAccount'
+// );
 
-const currentAccountId = useMapGetter('getCurrentAccountId');
+// const currentAccountId = useMapGetter('getCurrentAccountId');
 
-const isBehindAPaywall = computed(() => {
-  return !isFeatureEnabledOnAccount.value(
-    currentAccountId.value,
-    'custom_roles'
-  );
-});
+// const isBehindAPaywall = computed(() => {
+//   return !isFeatureEnabledOnAccount.value(
+//     currentAccountId.value,
+//     'custom_roles'
+//   );
+// });
 
 const fetchCustomRoles = async () => {
   try {
-    await store.dispatch('customRole/getCustomRole');
+    await store.dispatch('customRole/getCustomRole'); // ✅ Always refetch latest roles
   } catch (error) {
-    // Ignore Error
+    const errorMessage =
+      error?.message || t('CUSTOM_ROLE.LIST.API.ERROR_MESSAGE');
+    useAlert(errorMessage);
   }
 };
 
@@ -75,7 +77,6 @@ const showAlertMessage = message => {
 };
 
 const openAddModal = () => {
-  if (isBehindAPaywall.value) return;
   customRoleModalMode.value = 'add';
   selectedRole.value = null;
   showCustomRoleModal.value = true;
@@ -123,14 +124,12 @@ const confirmDeletion = () => {
   <SettingsLayout
     :is-loading="uiFlags.fetchingList"
     :loading-message="$t('CUSTOM_ROLE.LOADING')"
-    :no-records-found="!records.length && !isBehindAPaywall"
     :no-records-message="$t('CUSTOM_ROLE.LIST.404')"
   >
     <template #header>
       <BaseSettingsHeader
         :title="$t('CUSTOM_ROLE.HEADER')"
         :description="$t('CUSTOM_ROLE.DESCRIPTION')"
-        :link-text="$t('CUSTOM_ROLE.LEARN_MORE')"
         feature-name="canned_responses"
       >
         <template #actions>
@@ -146,10 +145,9 @@ const confirmDeletion = () => {
       </BaseSettingsHeader>
     </template>
 
+    <!-- <CustomRolePaywall v-if="isBehindAPaywall" /> -->
     <template #body>
-      <CustomRolePaywall v-if="isBehindAPaywall" />
       <table
-        v-else
         class="min-w-full overflow-x-auto divide-y divide-slate-75 dark:divide-slate-700"
       >
         <thead>

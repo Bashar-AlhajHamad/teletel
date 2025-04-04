@@ -86,21 +86,47 @@ class ConversationFinder
   end
 
   def find_all_conversations
-    @conversations = current_account.conversations.where(inbox_id: @inbox_ids)
+    # Create the user context for Pundit policy
+    user_context = {
+      user: current_user,
+      account: current_account,
+      account_user: AccountUser.find_by(user_id: current_user.id, account_id: current_account.id),
+      # Pass assignee_type for context-aware policy scoping
+      assignee_type: params[:assignee_type]
+    }
+
+    # Apply inbox filter first
+    base_scope = current_account.conversations.where(inbox_id: @inbox_ids)
+    # Then apply policy scope
+    @conversations = Pundit.policy_scope(user_context, base_scope)
+
     filter_by_conversation_type if params[:conversation_type]
     @conversations
   end
 
   def filter_by_assignee_type
+    # Note: The base @conversations relation is already scoped by ConversationPolicy
+    # which restricts agents to only see conversations assigned to them.
     case @assignee_type
     when 'me'
+      # Since the scope is already user-specific for agents, this filter is somewhat redundant
+      # but harmless. It ensures only conversations assigned to the current_user are kept.
       @conversations = @conversations.assigned_to(current_user)
     when 'unassigned'
-      @conversations = @conversations.unassigned
+      if current_user.administrator?
+        # Admins can see all unassigned conversations within the initial scope (all inboxes)
+        @conversations = @conversations.unassigned
+      else
+        # Agents can ONLY see conversations assigned to them due to the policy scope.
+        # Therefore, filtering for 'unassigned' must always return empty for an agent.
+        @conversations = @conversations.none 
+      end
     when 'assigned'
-      @conversations = @conversations.assigned
+      # For both admins and agents, this filters the current scope to conversations
+      # that have any assignee_id (i.e., are not unassigned).
+      # For agents, this will only include conversations assigned to them.
+      @conversations = @conversations.assigned 
     end
-    @conversations
   end
 
   def filter_by_conversation_type
